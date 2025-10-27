@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How Adobe AEM Uses Sling, OSGi, and HTL — The Core of a Modular CMS</title>
+  <meta name="description" content="A deep-dive into how Adobe Experience Manager (AEM) leverages Sling, OSGi, and HTL to deliver a flexible, component-based web experience.">
+  <meta property="og:title" content="How Adobe AEM Uses Sling, OSGi, and HTL">
+  <meta property="og:description" content="Learn how AEM integrates Sling, OSGi, and HTL to power modern digital experiences.">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2024-12-26T013:43:00Z">
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#ff3b81;--muted:#94a3b8;--text:#e6eef8}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;line-height:1.6;background:linear-gradient(180deg,#071123 0%, #071835 100%);color:var(--text);padding:40px}
+    .container{max-width:900px;margin:0 auto;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border-radius:12px;padding:36px;box-shadow:0 10px 30px rgba(2,6,23,0.7)}
+    header h1{margin:0 0 8px;font-size:clamp(22px,4vw,32px);letter-spacing:-0.02em;color:white}
+    header p.lead{margin:0;color:var(--muted)}
+    .meta{display:flex;gap:12px;align-items:center;margin-top:18px}
+    .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#f43f5e);display:flex;align-items:center;justify-content:center;font-weight:700}
+    .by{font-size:14px}
+    article{margin-top:26px}
+    h2{color:#fff;margin-top:28px}
+    pre{background:#061226;padding:12px;border-radius:8px;overflow:auto;font-size:14px;color:#d1eaff}
+    ul,ol{margin-left:22px}
+    footer{margin-top:34px;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>How Adobe AEM Uses Sling, OSGi, and HTL — The Core of a Modular CMS</h1>
+      <p class="lead">A deep dive into the three pillars of Adobe Experience Manager’s backend architecture — Sling for content resolution, OSGi for modularity, and HTL for secure templating.</p>
+      <div class="meta">
+        <div class="avatar">AS</div>
+        <div>
+          <div class="by">Aakash Srivastava — October 2025</div>
+          <div style="color:var(--muted);font-size:13px">Enterprise Engineering • AEM • Java • Web Architecture</div>
+        </div>
+      </div>
+    </header>
+
+    <article>
+      <p>Adobe Experience Manager (AEM) stands as one of the most advanced enterprise-level Content Management Systems (CMS). At its core, AEM runs on a powerful trio — <strong>Apache Sling</strong>, <strong>OSGi</strong>, and <strong>HTL (HTML Template Language)</strong>. Together, they define AEM’s flexibility, modularity, and scalability for building enterprise web experiences.</p>
+
+      <h2>1. Apache Sling — Content Resolution and RESTful Framework</h2>
+      <p><strong>Apache Sling</strong> is the web framework that powers AEM’s content structure. Built on top of the Java Content Repository (JCR), Sling maps HTTP requests directly to content nodes. This means every piece of content (a page, image, or component) in AEM has a unique path-based identity.</p>
+
+      <p>When a user visits a page, Sling resolves the request path (for example, <code>/content/mysite/home.html</code>) to a corresponding JCR node. It then determines the appropriate script (e.g., HTL, JSP) to render it. This architecture allows developers to treat content as RESTful resources.</p>
+
+      <h3>Key Features of Sling:</h3>
+      <ul>
+        <li><strong>Resource-based routing:</strong> Every node in the repository is a resource accessible via HTTP.</li>
+        <li><strong>Script resolution:</strong> Sling uses script resolution order to determine which component script renders the resource.</li>
+        <li><strong>Adaptable model:</strong> Sling Models make it easy to map JCR content to Java objects with annotations.</li>
+      </ul>
+
+      <pre><code>@Model(adaptables = Resource.class)
+public class BannerModel {
+    @Inject private String title;
+    @Inject private String description;
+
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+}</code></pre>
+
+      <p>With Sling, AEM follows a content-centric approach — making it easy to map URLs to content structures rather than static files.</p>
+
+      <h2>2. OSGi — The Modular Heart of AEM</h2>
+      <p><strong>OSGi (Open Services Gateway Initiative)</strong> is the dynamic module system that forms the backbone of AEM. It enables developers to build, deploy, and manage components (called bundles) independently. This modularity ensures that the platform can evolve without restarting the entire application.</p>
+
+      <p>In AEM, OSGi manages everything from configurations to service lifecycles. Developers can create OSGi services that encapsulate business logic and expose them to other modules through dependency injection.</p>
+
+      <h3>Why OSGi is Essential:</h3>
+      <ul>
+        <li><strong>Dynamic deployment:</strong> Install, start, stop, or update bundles at runtime without downtime.</li>
+        <li><strong>Service registry:</strong> OSGi automatically manages service discovery and injection.</li>
+        <li><strong>Loose coupling:</strong> Components are independent and communicate through service interfaces.</li>
+      </ul>
+
+      <pre><code>@Component(service = GreetingService.class, immediate = true)
+public class GreetingServiceImpl implements GreetingService {
+    public String sayHello(String name) {
+        return "Hello, " + name + "! Welcome to AEM.";
+    }
+}</code></pre>
+
+      <p>Developers can expose this service to servlets, workflows, or HTL components, ensuring high reusability and maintainability.</p>
+
+      <h2>3. HTL (Sightly) — The Secure and Maintainable Templating Engine</h2>
+      <p><strong>HTL (HTML Template Language)</strong>, formerly known as <strong>Sightly</strong>, is AEM’s recommended templating language. It was designed to replace JSP and make front-end development more secure, maintainable, and readable.</p>
+
+      <p>HTL separates logic from markup, allowing backend logic to reside in Sling Models or Java services, while the HTL files focus purely on presentation. It automatically escapes output to prevent XSS vulnerabilities — a major plus in enterprise environments.</p>
+
+      <h3>Sample HTL Code:</h3>
+      <pre><code>&lt;div class="banner"&gt;
+  &lt;h1&gt;${bannerModel.title}&lt;/h1&gt;
+  &lt;p&gt;${bannerModel.description}&lt;/p&gt;
+&lt;/div&gt;</code></pre>
+
+      <p>Here, the HTL template calls properties from the Sling Model <code>BannerModel</code> we saw earlier, ensuring a clean separation between logic and presentation layers.</p>
+
+      <h2>4. How They Work Together in AEM</h2>
+      <p>AEM’s architecture thrives on the synergy of Sling, OSGi, and HTL:</p>
+      <ol>
+        <li><strong>Sling</strong> maps user requests to JCR resources.</li>
+        <li><strong>OSGi</strong> provides modular, dynamic backend services.</li>
+        <li><strong>HTL</strong> renders the front-end using data from Sling Models or OSGi services.</li>
+      </ol>
+
+      <p>For example, when a user requests a page, Sling resolves the resource, the model fetches data via an OSGi service, and HTL displays it neatly — all within milliseconds. This tri-layer interaction gives AEM its unmatched speed and flexibility in delivering personalized digital experiences.</p>
+
+      <h2>5. Advanced AEM Integrations and Patterns</h2>
+      <p>Modern AEM projects leverage these technologies to integrate with cloud, headless, and AI-powered architectures. Some common patterns include:</p>
+      <ul>
+        <li><strong>Sling Servlets + REST APIs:</strong> Exposing AEM data for React or Angular frontends.</li>
+        <li><strong>OSGi Configurations:</strong> Environment-specific setups (DEV/QA/PROD) using config nodes or the Felix console.</li>
+        <li><strong>HTL with AEM Core Components:</strong> Rapid UI development using reusable templates and editable components.</li>
+      </ul>
+
+      <p>Additionally, AEM developers now combine Sling Models with GraphQL APIs, enabling hybrid content delivery across channels — a key element of Adobe’s <em>Experience as a Service</em> vision.</p>
+
+      <h2>6. Why This Architecture Matters</h2>
+      <p>The combination of Sling, OSGi, and HTL makes AEM not just a CMS, but a <strong>component-driven application platform</strong>. It allows developers to scale from small websites to complex digital ecosystems with thousands of pages and personalized components.</p>
+
+      <ul>
+        <li><strong>For developers:</strong> A modular, Java-based framework that supports reusability and clean architecture.</li>
+        <li><strong>For authors:</strong> A drag-and-drop, intuitive authoring interface powered by component logic.</li>
+        <li><strong>For enterprises:</strong> Stability, scalability, and integration with Adobe’s wider Experience Cloud suite.</li>
+      </ul>
+
+      <h2>Conclusion</h2>
+      <p>Adobe AEM’s architecture is a masterclass in modular, service-oriented design. <strong>Sling</strong> provides flexible content resolution, <strong>OSGi</strong> ensures runtime modularity, and <strong>HTL</strong> guarantees safe, efficient rendering. Together, they empower teams to build dynamic, secure, and high-performing digital experiences that evolve with business needs.</p>
+
+      <p>Understanding these core technologies is essential for every AEM developer aiming to architect scalable and maintainable solutions in enterprise environments.</p>
+
+      
+    </article>
+  </div>
+</body>
+</html>
