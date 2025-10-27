@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Integrating OpenAI APIs with LangChain — A Step-by-Step Guide</title>
+  <meta name="description" content="Learn how to integrate OpenAI APIs with LangChain to build powerful, context-aware AI applications.">
+  <meta property="og:title" content="Integrating OpenAI APIs with LangChain — A Step-by-Step Guide">
+  <meta property="og:description" content="Learn how to integrate OpenAI APIs with LangChain to build powerful, context-aware AI applications.">
+  <meta property="og:type" content="article">
+  <meta property="article:published_time" content="2025-03-11T09:00:00Z">
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#16a34a;--muted:#94a3b8;--text:#e6eef8}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;line-height:1.6;background:linear-gradient(180deg,#081322 0%, #0b1d30 100%);color:var(--text);padding:40px}
+    .container{max-width:900px;margin:0 auto;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:36px;box-shadow:0 10px 30px rgba(2,6,23,0.7)}
+    header h1{margin:0 0 8px;font-size:clamp(20px,4vw,30px);letter-spacing:-0.02em}
+    header p.lead{margin:0;color:var(--muted)}
+    .meta{display:flex;gap:12px;align-items:center;margin-top:18px}
+    .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#22c55e);display:flex;align-items:center;justify-content:center;font-weight:700}
+    .by{font-size:14px}
+    article{margin-top:26px}
+    h2{color:#fff;margin-top:22px}
+    pre{background:#061226;padding:12px;border-radius:8px;overflow:auto;color:#a3e635}
+    code{color:#a3e635}
+    .cta{display:inline-block;margin-top:22px;padding:10px 14px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#22c55e);text-decoration:none;color:white;font-weight:600}
+    footer{margin-top:34px;color:var(--muted);font-size:13px}
+    @media (max-width:600px){body{padding:18px}.container{padding:20px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Integrating OpenAI APIs with LangChain</h1>
+      <p class="lead">A practical guide to connect OpenAI models with LangChain for building robust, intelligent, and context-aware AI workflows.</p>
+
+      <div class="meta">
+        <div class="avatar">AS</div>
+        <div>
+          <div class="by">Aakash Srivastava — Oct 27, 2025</div>
+          <div style="color:var(--muted);font-size:13px">Software Engineer • AI • LangChain & OpenAI Integrations</div>
+        </div>
+      </div>
+    </header>
+
+    <article>
+      <p>Integrating <strong>OpenAI APIs</strong> into <strong>LangChain</strong> allows developers to leverage the reasoning power of LLMs within structured, tool-augmented workflows. Whether you’re building chatbots, autonomous agents, or context-aware retrieval systems, LangChain simplifies prompt management, chaining, and memory — while OpenAI provides the intelligence core.</p>
+
+      <h2>1. Setting up your environment</h2>
+      <p>Before starting, make sure you have both <code>langchain</code> and <code>openai</code> libraries installed.</p>
+      <pre><code>pip install langchain openai</code></pre>
+
+      <p>Then, export your OpenAI API key:</p>
+      <pre><code>export OPENAI_API_KEY="your-api-key"</code></pre>
+
+      <p>or on Windows:</p>
+      <pre><code>setx OPENAI_API_KEY "your-api-key"</code></pre>
+
+      <h2>2. Basic integration</h2>
+      <p>LangChain provides native support for OpenAI models. The simplest integration looks like this:</p>
+      <pre><code>from langchain.llms import OpenAI
+
+llm = OpenAI(model="gpt-4o-mini", temperature=0.5)
+response = llm.invoke("Write a haiku about LangChain.")
+print(response)</code></pre>
+
+      <p>This snippet sends a query to the OpenAI API via LangChain and returns the model’s output. The <code>temperature</code> parameter controls creativity — lower values yield deterministic results.</p>
+
+      <h2>3. Creating a simple chain</h2>
+      <p>A <em>chain</em> in LangChain represents a pipeline of components — such as prompts, models, and output parsers.</p>
+      <pre><code>from langchain import PromptTemplate, LLMChain
+
+prompt = PromptTemplate.from_template("Translate this English text to French: {text}")
+chain = LLMChain(llm=llm, prompt=prompt)
+
+result = chain.invoke({"text": "How are you?"})
+print(result["text"])</code></pre>
+
+      <p>Here, LangChain wraps the OpenAI model inside a reusable component that takes structured input and output. This abstraction helps when building multi-step pipelines.</p>
+
+      <h2>4. Adding memory for context</h2>
+      <p>To maintain conversation state or context across turns, LangChain offers <code>ConversationBufferMemory</code> and other memory classes:</p>
+      <pre><code>from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
+
+memory = ConversationBufferMemory()
+conversation = ConversationChain(llm=llm, memory=memory)
+
+conversation.invoke("Hello, who are you?")
+conversation.invoke("What did I just ask you?")</code></pre>
+
+      <p>Now, the chain remembers previous inputs, giving your chatbot continuity without manually re-feeding conversation history.</p>
+
+      <h2>5. Using OpenAI tools and agents</h2>
+      <p>LangChain’s <code>AgentExecutor</code> framework lets you build agents that can use external tools (APIs, databases, Python functions). For example:</p>
+      <pre><code>from langchain.agents import initialize_agent, load_tools
+
+tools = load_tools(["serpapi", "llm-math"], llm=llm)
+agent = initialize_agent(tools, llm, agent_type="zero-shot-react-description", verbose=True)
+
+agent.invoke({"input": "What is the square root of 256?"})</code></pre>
+
+      <p>The agent uses OpenAI’s reasoning capabilities to decide when and how to call external tools. This forms the backbone of <strong>Agentic AI</strong> architectures.</p>
+
+      <h2>6. Common best practices</h2>
+      <ul>
+        <li><strong>Use smaller models for prototyping:</strong> Start with <code>gpt-4o-mini</code> or <code>gpt-3.5-turbo</code> for faster iteration.</li>
+        <li><strong>Cache responses:</strong> Use LangChain’s <code>LangSmith</code> or local cache to reduce API costs during development.</li>
+        <li><strong>Monitor and log:</strong> Enable tracing with <code>LANGCHAIN_TRACING_V2=true</code> to visualize chain execution.</li>
+        <li><strong>Handle errors gracefully:</strong> Wrap API calls in try/except blocks and add retry logic using <code>tenacity</code>.</li>
+      </ul>
+
+      <h2>7. Example: Q&A chatbot</h2>
+      <p>Here’s a small demo that combines everything — OpenAI model, LangChain chain, and memory:</p>
+      <pre><code>from langchain.chains import ConversationChain
+from langchain.memory import ConversationBufferMemory
+from langchain.llms import OpenAI
+
+llm = OpenAI(model="gpt-4o-mini", temperature=0.3)
+memory = ConversationBufferMemory()
+chatbot = ConversationChain(llm=llm, memory=memory)
+
+while True:
+    query = input("You: ")
+    if query.lower() in ["exit", "quit"]:
+        break
+    response = chatbot.invoke(query)
+    print("Bot:", response["response"])</code></pre>
+
+      <h2>Final thoughts</h2>
+      <p>Integrating OpenAI with LangChain gives developers a production-ready toolkit for orchestrating powerful LLM applications — from chatbots and agents to data enrichment pipelines. LangChain handles the engineering complexity (memory, chaining, and observability), while OpenAI delivers the intelligence core.</p>
+
+      <p>By combining these two ecosystems, you unlock the ability to move from simple prompts to fully <strong>agentic, context-aware systems</strong> that can plan, reason, and act intelligently.</p>
+
+     
+    </article>
+  </div>
+</body>
+</html>
